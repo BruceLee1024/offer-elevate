@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer 对比工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0071e3;
+            --danger-color: #ff3b30;
+            --background-color: #f5f5f7;
+            --card-background: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --border-color: #d2d2d7;
+            --input-background: #fbfbfd;
+        }
+
+        /* 添加暗黑主题的颜色变量 */
+        [data-theme="dark"] {
+            --primary-color: #0a84ff;
+            --danger-color: #ff453a;
+            --background-color: #1c1c1e;
+            --card-background: #2c2c2e;
+            --text-primary: #ffffff;
+            --text-secondary: #98989d;
+            --border-color: #3a3a3c;
+            --input-background: #1c1c1e;
+        }
+
+        /* 添加主题切换按钮样式 */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-toggle i {
+            font-size: 20px;
+            color: var(--text-primary);
+        }
+
+        /* 添加主题切换动画 */
+        body {
+            transition: background-color 0.3s ease;
+        }
+
+        .container,
+        .offer-container,
+        .weight-card,
+        input,
+        button,
+        .data-table {
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: var(--card-background);
+            padding: clamp(30px, 4vw, 50px);
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            font-size: clamp(28px, 4vw, 44px);
+            margin-bottom: clamp(40px, 5vw, 60px);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .offer-form {
+            margin-bottom: 40px;
+            padding: 30px;
+            background-color: var(--input-background);
+            border-radius: 16px;
+        }
+
+        .factor-group {
+            margin-bottom: clamp(10px, 1.5vw, 20px);
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1vw, 16px);
+        }
+
+        label {
+            display: inline-block;
+            margin-bottom: 0;
+            font-weight: 500;
+            min-width: 120px;
+            color: var(--text-primary);
+        }
+
+        input[type="number"], 
+        input[type="text"] {
+            width: clamp(80px, 10vw, 120px);
+            padding: clamp(8px, 1vw, 12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: var(--card-background);
+            transition: all 0.2s ease;
+            height: 36px;
+            padding: 0 12px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            height: 36px;
+            line-height: 1;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .add-factor-btn {
+            background-color: var(--primary-color);
+            margin-bottom: 16px;
+            height: 36px;
+        }
+
+        .remove-offer-btn {
+            background-color: var(--danger-color);
+        }
+
+        .delete-factor {
+            color: var(--danger-color);
+            cursor: pointer;
+            margin-left: 16px;
+            font-weight: 500;
+        }
+
+        .custom-factors {
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            margin-top: 24px;
+        }
+
+        .custom-factors .factor-group {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .custom-factors .factor-name-input {
+            width: 100%;
+        }
+
+        .delete-factor {
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .delete-factor:hover {
+            background-color: rgba(255, 59, 48, 0.1);
+        }
+
+        .total-weight {
+            color: var(--text-secondary);
+            margin-top: 16px;
+            font-size: 16px;
+            padding: 12px;
+            background-color: var(--card-background);
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .offer-container {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background-color: var(--input-background);
+            height: fit-content;
+        }
+
+        .offer-name-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin: -16px -16px 16px -16px;
+            padding: 16px;
+            background-color: var(--card-background);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .offer-name-input {
+            flex: 1;
+            margin-right: 30px;
+        }
+
+        .offer-scores {
+            background: var(--card-background);
+            padding: 12px;  /* 添加缺失的分号 */
+            border-radius: 8px;
+            margin-top: 8px;  /* 减小上边距 */
+        }
+
+        .offer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .offer-name-input {
+            width: clamp(150px, 20vw, 250px);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background-color: var(--input-background);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: var(--input-background);
+        }
+
+        .total-row {
+            background-color: var(--primary-color) !important;
+            color: white;
+        }
+
+        .total-row td {
+            font-weight: 500;
+        }
+
+        #result {
+            margin-top: 40px;
+            padding: 30px;
+            border: none;
+            border-radius: 16px;
+            background-color: var(--input-background);
+        }
+
+        #scores-summary {
+            background-color: var(--card-background);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+        }
+
+        #scores-summary p {
+            margin: 12px 0;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        #scores-summary p:last-child {
+            margin-bottom: 0;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .offers-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .offers-container {
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .factor-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            input[type="number"],
+            input[type="text"] {
+                width: 100%;
+            }
+
+            .offer-name-input {
+                width: 100%;
+            }
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: minmax(300px, 350px) 1fr;
+            gap: clamp(15px, 2vw, 30px);
+            margin-top: clamp(15px, 2vw, 30px);
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            min-width: 0; /* 防止内容 */
+        }
+
+        .weight-form {
+            background-color: var(--input-background);
+            border-radius: 16px;
+            padding: clamp(15px, 2vw, 24px);
+            margin-bottom: 20px;
+        }
+
+        /* 调整响应式布局 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+        }
+
+        /* 大幕优化 */
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 1600px;
+            }
+
+            .main-container {
+                grid-template-columns: 400px 1fr;
+            }
+        }
+
+        /* 中等屏幕调整 */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: minmax(250px, 300px) 1fr;
+            }
+        }
+
+        /* 平板设备 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+        }
+
+        /* 移动设备 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .factor-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            input[type="number"],
+            input[type="text"] {
+                width: 100%;
+            }
+
+            .offer-name-input {
+                width: 100%;
+            }
+
+            .offers-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .offers-header button {
+                width: 100%;
+            }
+        }
+
+        /* 超小屏幕 */
+        @media (max-width: 480px) {
+            .data-table {
+                font-size: 14px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px;
+            }
+        }
+
+        /* 添加平滑过渡效果 */
+        * {
+            transition: none;
+        }
+
+        /* 优化表格响应式示 */
+        .data-table-wrapper {
+            background: var(--card-background);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            margin-top: 24px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 16px;
+            text-align: center;
+            border: none;  /* 移除边框 */
+        }
+
+        .data-table th {
+            background-color: var(--input-background);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table th:first-child {
+            border-top-left-radius: 12px;
+            text-align: left;
+            padding-left: 24px;
+        }
+
+        .data-table th:last-child {
+            border-top-right-radius: 12px;
+        }
+
+        .data-table td:first-child {
+            text-align: left;
+            padding-left: 24px;
+            font-weight: 500;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: var(--input-background);
+        }
+
+        .data-table tr:last-child td:first-child {
+            border-bottom-left-radius: 12px;
+        }
+
+        .data-table tr:last-child td:last-child {
+            border-bottom-right-radius: 12px;
+        }
+
+        /* 总分行样式 */
+        .total-row {
+            background-color: var(--primary-color) !important;
+            color: white;
+            font-weight: 500;
+        }
+
+        .total-row td {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* 评估结果区域样式 */
+        #result {
+            margin-top: 40px;
+        }
+
+        #scores-summary {
+            background: var(--card-background);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+        }
+
+        #scores-summary p {
+            margin: 12px 0;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        #scores-summary p:last-child {
+            margin-bottom: 0;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ���改 offers-list 的布局 */
+        #offers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* 调整 offer-container 的样式 */
+        .offer-container {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 0;
+            background-color: var(--input-background);
+            height: fit-content;
+        }
+
+        /* 调整 factor-group 在 offer 中的样式 */
+        .offer-container .factor-group {
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+
+        .offer-container .factor-group label {
+            min-width: 100px;
+            font-size: 14px;
+        }
+
+        .offer-container input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .offer-container .offer-name-input {
+            font-size: 16px;
+            padding: 8px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        /* 调整响应布局 */
+        @media (max-width: 1400px) {
+            #offers-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            #offers-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .offer-container {
+                padding: 15px;
+            }
+        }
+
+        /* 滑块样式 */
+        .range-slider {
+            display: grid;
+            grid-template-columns: 80px 1fr 36px;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            padding: 4px 8px;
+            background: var(--card-background);
+            border-radius: 4px;
+        }
+
+        .range-slider label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .range-slider input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-color);
+            outline: none;
+            padding: 0;
+        }
+
+        .range-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .range-slider input[type="range"]::-webkit-slider-thumb:hover {
+            transform: none;
+            background: var(--primary-color);
+        }
+
+        .range-slider .range-value {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 500;
+            width: 20px;
+            text-align: right;
+        }
+
+        /* 调整 offer 卡片样式 */
+        .offer-container {
+            padding: 12px;
+            border-radius: 12px;
+            background-color: var(--input-background);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+        }
+
+        .offer-scores {
+            background: var(--card-background);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        /* Firefox 滑块样式 */
+        .range-slider input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .range-slider input[type="range"]::-moz-range-track {
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-color);
+        }
+
+        /* 优化标题样式 */
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 24px 0;  /* 统一上边距 */
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 32px;  /* 固定标题高度 */
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 8px 0 24px 0;  /* 移除左边距，保持左对齐 */
+            padding-left: 0;  /* 移除左内边距 */
+        }
+
+        /* 修复打分卡样式 */
+        .offer-container {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .offer-name-container {
+            margin: -12px -12px 12px -12px;
+            padding: 12px;
+            background-color: var(--card-background);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .offer-name-input {
+            width: 100%;
+            font-size: 14px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-background);
+            color: var(--text-primary);  /* 使用主题文本颜色 */
+        }
+
+        .offer-scores {
+            background: var(--card-background);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: auto;
+        }
+
+        /* 调整权设置区域的标题样式 */
+        .weight-form h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* 调整自定义维度区域的标题 */
+        .custom-factors h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .offers-header {
+            margin-bottom: 30px;
+        }
+
+        .offers-title {
+            margin-bottom: 20px;
+        }
+
+        .offers-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .offers-actions {
+                flex-direction: column;
+            }
+        }
+
+        .delete-offer-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.5;
+            border: none;
+            z-index: 1;
+        }
+
+        .delete-offer-btn:hover {
+            opacity: 0.8;
+            background-color: var(--danger-color);
+        }
+
+        /* 修改权重设置区域的样式 */
+        .weight-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .weight-card {
+            background: var(--card-background);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .weight-card label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            min-width: auto;
+            margin-bottom: 4px;
+        }
+
+        .weight-card input[type="number"] {
+            width: 100%;
+            height: 28px;
+            padding: 4px 8px;
+            font-size: 13px;
+            background-color: var(--input-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);  /* 使用主题文本颜色 */
+        }
+
+        /* 自定义维度片样 */
+        .custom-factors {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .custom-factor-card {
+            background: var(--card-background);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .custom-factor-card input {
+            height: 36px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 1400px) {
+            .weight-cards {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .weight-cards {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .weight-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .weight-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .weight-card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 0;  /* 移除顶部边距 */
+        }
+
+        .weight-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            background: var(--input-background);
+        }
+
+        .weight-item label {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .weight-item input[type="number"] {
+            width: 80px;
+            height: 32px;
+            padding: 4px 8px;
+        }
+
+        .delete-weight-btn {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.5;
+            border: none;
+        }
+
+        .delete-weight-btn:hover {
+            opacity: 0.8;
+            background-color: var(--danger-color);
+        }
+
+        .add-weight-btn {
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+
+        .total-weight {
+            text-align: right;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            transition: color 0.3s ease;
+        }
+
+        .total-weight span {
+            display: inline-block;
+            margin-left: 4px;
+            opacity: 0.8;
+        }
+
+        .instruction-card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .instruction-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .instruction-list {
+            margin: 0;
+            padding-left: 24px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .instruction-list li {
+            margin-bottom: 8px;
+        }
+
+        .instruction-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 添加卡片悬停效果 */
+        .instruction-card:hover,
+        .weight-card:hover {
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* 调整评估结果标题样式 */
+        #result .section-title {
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+        }
+
+        /* 修改删除按样式 */
+        .delete-weight-btn {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.5;
+            border: none;
+        }
+
+        .delete-weight-btn:hover {
+            opacity: 0.8;
+            background-color: var(--danger-color);
+        }
+
+        /* Offer 卡片的删除按钮样式 */
+        .delete-offer-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.5;
+            border: none;
+            z-index: 1;
+        }
+
+        .delete-offer-btn:hover {
+            opacity: 0.8;
+            background-color: var(--danger-color);
+        }
+
+        /* 自定义权重的删除钮样�� */
+        .delete-factor {
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            opacity: 0.5;
+        }
+
+        .delete-factor:hover {
+            color: var(--danger-color);
+            opacity: 0.8;
+        }
+
+        /* 为权重项和 Offer 卡片添加删除按钮显示动画 */
+        .weight-item, .offer-container {
+            position: relative;
+        }
+
+        .weight-item:hover .delete-weight-btn,
+        .offer-container:hover .delete-offer-btn {
+            opacity: 0.5;
+        }
+
+        /* 修改布局相关的样式 */
+        .main-container {
+            display: grid;
+            grid-template-columns: minmax(300px, 350px) 1fr;
+            gap: clamp(15px, 2vw, 30px);
+            margin-top: clamp(15px, 2vw, 30px);
+        }
+
+        /* 调整标题样式确保对齐 */
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 24px 0;  /* 统一上边距 */
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 32px;  /* 固定标题高度 */
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 8px 0 24px 0;  /* 移除左边距，保持左对齐 */
+            padding-left: 0;  /* 移除左内边距 */
+        }
+
+        /* 调整卡片容器样式 */
+        .weight-form, .offers-container {
+            margin-top: 0;  /* 移除顶部边距 */
+        }
+
+        /* 调整权卡片样式 */
+        .weight-card {
+            background: var(--card-background);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 调整权重列表容器 */
+        #weight-list {
+            flex: 1;  /* 占用剩余空间 */
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 调整权重项样式 */
+        .weight-item {
+            padding: 8px;
+            background: var(--input-background);
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 80px 30px;
+            gap: 8px;
+            align-items: center;
+            margin: 0;  /* 移除外边距 */
+        }
+
+        /* 调��� Offer 卡片样式 */
+        .offer-container {
+            padding: 16px;
+            border-radius: 16px;
+            background-color: var(--input-background);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 调整添加 Offer 卡片样式 */
+        .add-offer-container {
+            padding: 16px;
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            background: var(--card-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(100% - 32px);  /* 减去内边距 */
+            min-height: 200px;  /* 设置最小高度 */
+        }
+
+        /* 确保左右两侧内容对齐 */
+        .weight-form, .offers-container {
+            margin-top: 0;
+        }
+
+        /* 调整按钮容器样式 */
+        .weight-card-footer {
+            margin-top: auto;  /* 将按钮推到底部 */
+            padding-top: 16px;
+        }
+
+        /* 调整 Offer 列表样式 */
+        #offers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 0;  /* 移���顶部边距 */
+        }
+
+        /* 调整 Offer 卡片样式 */
+        .offer-container {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: var(--input-background);
+            height: auto;
+            min-height: 0;
+            box-sizing: border-box;
+            margin-top: 0;  /* 移除顶部边距 */
+        }
+
+        /* 调整标题容器样式 */
+        .offers-title, .weight-form > h2 {
+            margin-top: 0;  /* 移除顶部边距 */
+        }
+
+        /* 调整操作按钮容器样式 */
+        .offers-actions {
+            margin-top: 0;  /* 移除顶部边距 */
+            margin-bottom: 20px;
+        }
+
+        /* 调整体容器样式 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: var(--card-background);
+            padding: clamp(30px, 4vw, 50px);
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 优化主标题样式 */
+        h1 {
+            font-size: clamp(28px, 4vw, 44px);
+            margin-bottom: clamp(40px, 5vw, 60px);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        /* 调整左侧权重卡片和说明模块的间距 */
+        .weight-card {
+            margin-bottom: 40px;
+            background: var(--card-background);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 优化说明模块样式 */
+        .instruction-card {
+            background: var(--card-background);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-top: 40px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 优化权重项样式 */
+        .weight-item {
+            padding: 12px;
+            margin-bottom: 12px;
+            background: var(--input-background);
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        /* 优化 Offer 卡片样式 */
+        .offer-container {
+            padding: 20px;
+            border-radius: 16px;
+            background-color: var(--input-background);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 优化滑块容器样式 */
+        .range-slider {
+            padding: 8px 12px;
+            background: var(--card-background);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* 优化按钮样式 */
+        .add-weight-btn, .add-offer-btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            border-radius: 12px;
+            background: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+        }
+
+        /* 优化计算结果按�� */
+        button[onclick="calculateScore()"] {
+            margin-top: 30px;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 12px;
+            background: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+        }
+
+        /* 优化结果显示区域 */
+        #result {
+            margin-top: 50px;
+            padding: 30px;
+            border-radius: 20px;
+            background-color: var(--input-background);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 优化表格样式 */
+        .data-table {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .data-table th {
+            padding: 16px 20px;
+            background-color: var(--input-background);
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 14px 20px;
+        }
+
+        /* 优化分隔线样式 */
+        .section-title {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 优化权重总和显示 */
+        .total-weight {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: var(--input-background);
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* 添加最高分列的样式 */
+        /*
+        .best-offer-column {
+            background-color: rgba(0, 113, 227, 0.05) !important;
+            position: relative;
+        }
+
+        th.best-offer-column {
+            background-color: rgba(0, 113, 227, 0.1) !important;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .total-row .best-offer-column {
+            background-color: var(--primary-color) !important;
+            color: white;
+        }
+
+        .data-table tr:nth-child(even) .best-offer-column {
+            background-color: rgba(0, 113, 227, 0.08) !important;
+        }
+        */
+
+        /* 修改 offers-container 相关样式 */
+        .offers-header {
+            margin-bottom: 24px;
+        }
+
+        .offers-title {
+            margin-bottom: 20px;
+        }
+
+        /* 移除原有的 offers-actions 样式 */
+        .offers-actions {
+            display: none;
+        }
+
+        /* 添加新的 add-offer-container ��式 */
+        .add-offer-container {
+            height: auto;  /* 移除固定高度 */
+            min-height: 0;  /* 移除最小高度 */
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            background: var(--card-background);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;  /* 与 offer-container 保持一致 */
+            cursor: pointer;
+            box-sizing: border-box;  /* 确保padding计入总高度 */
+        }
+
+        .add-offer-container:hover {
+            border-color: var(--primary-color);
+            background-color: var(--input-background);
+        }
+
+        .add-offer-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 15px;
+            padding: 16px;  /* 增加内边距使卡片高度与其他卡片一致 */
+            margin: 0;
+            height: auto;  /* 移除固定高度 */
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;  /* 占满容器宽度 */
+        }
+
+        .add-offer-btn:before {
+            content: "+";
+            font-size: 24px;
+            color: var(--text-secondary);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        /* 调整 offers-list 布局 */
+        #offers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: stretch;  /* ��保所有项目高度一�� */
+        }
+
+        /* 调整 Offer 评分卡片内的间距 */
+        .offer-scores {
+            background: var(--card-background);
+            padding: 12px  /* 减小内边距 */
+            border-radius: 8px;
+            margin-top: 8px;  /* 减小上边距 */
+        }
+
+        .range-slider {
+            display: grid;
+            grid-template-columns: 80px 1fr 36px;  /* 调整列宽 */
+            align-items: center;
+            gap: 6px;  /* 减小间距 */
+            margin-bottom: 6px;  /* 减小��部间距 */
+            padding: 4px 8px;  /* 减小内边距 */
+            background: var(--card-background);
+            border-radius: 4px;
+        }
+
+        .range-slider label {
+            font-size: 12px;  /* 减小字体大小 */
+            color: var(--text-secondary);
+        }
+
+        .range-slider .range-value {
+            font-size: 12px;
+            width: 20px;  /* 减小数值显示区域宽度 */
+        }
+
+        /* 调整 Offer 卡片容器样式 */
+        .offer-container {
+            padding: 12px;  /* 减小内边距 */
+            height: auto;  /* 自适应高度 */
+            min-height: 0;
+        }
+
+        .offer-name-container {
+            margin: -12px -12px 12px -12px;  /* 调整边距以匹配的内边距 */
+            padding: 12px;
+        }
+
+        /* 调整权重设置卡片和 Offer 列表的高度对齐 */
+        .weight-card, .offers-container {
+            height: fit-content;
+            min-height: 400px;  /* 设置最小���度 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .offers-list {
+            flex: 1;  /* 占用剩余空间 */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            align-items: start;  /* 顶部对齐 */
+        }
+
+        /* 在 style 标签中添加 footer 样式 */
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer span {
+            opacity: 0.8;
+        }
+
+        /* 调整权重卡片和权重项的样式 */
+        .weight-card {
+            padding: 16px;  /* 减小卡片内边距 */
+            margin-bottom: 30px;  /* 减小与说明卡片的间距 */
+        }
+
+        .weight-item {
+            padding: 6px 8px;  /* 减小权重项的内边距 */
+            margin-bottom: 6px;  /* 减小权重项之间的间距 */
+            background: var(--input-background);
+            border-radius: 6px;  /* 减小圆角 */
+            display: grid;
+            grid-template-columns: 1fr 70px 24px;  /* 调整列宽 */
+            gap: 6px;  /* 减小元素间距 */
+            align-items: center;
+        }
+
+        .weight-item label {
+            font-size: 13px;  /* 减小字体大小 */
+            margin: 0;
+        }
+
+        .weight-item input[type="number"] {
+            width: 100%;
+            height: 28px;  /* 减小输入框高度 */
+            padding: 4px 8px;
+            font-size: 13px;
+        }
+
+        /* 调整删除按钮大小 */
+        .delete-weight-btn {
+            width: 18px;  /* 减小按钮大小 */
+            height: 18px;
+            font-size: 12px;
+        }
+
+        /* 调整底部按钮和总和显示的样式 */
+        .weight-card-footer {
+            margin-top: 12px;  /* 减���顶部间距 */
+            padding-top: 12px;
+        }
+
+        .add-weight-btn {
+            margin: 0 0 12px 0;  /* 调整按钮边距 */
+            height: 32px;  /* 减小按钮高度 */
+            font-size: 13px;
+        }
+
+        .total-weight {
+            margin-top: 12px;
+            padding: 10px;  /* 减小内边距 */
+            font-size: 13px;
+        }
+
+        /* 添加介绍卡片相关样式 */
+        .intro-card {
+            background: var(--input-background);  /* 与权重设置模块背景色一致 */
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+
+        .intro-title {
+            font-size: 22px;  /* 与权重设置标题大小一致 */
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 24px 0;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 32px;  /* 与权重设置标题高度一致 */
+        }
+
+        /* 调整工具介绍卡片的样式 */
+        .intro-content {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .intro-content p {
+            margin: 0;  /* 移除段落边距 */
+        }
+
+        /* 移除不需要的样式 */
+        .intro-features {
+            display: none;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: var(--input-background);  /* 与权重项背景色一致 */
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .feature-icon {
+            font-size: 16px;
+            width: 20px;  /* 固定图标宽度 */
+            text-align: center;
+        }
+
+        /* 修改 Offer 评分区域的样式 */
+        .offers-container {
+            background-color: var(--input-background);  /* 与权重设置模块背景色一致 */
+            border-radius: 16px;
+            padding: clamp(15px, 2vw, 24px);
+        }
+
+        /* 修改 Offer 卡片样式 */
+        .offer-container {
+            background: var(--card-background);  /* 改为白色背景 */
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 修改添加 Offer 卡片样式 */
+        .add-offer-container {
+            background: var(--card-background);
+            padding: 16px;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* 修改 Offer 名称容器样式 */
+        .offer-name-container {
+            margin: -16px -16px 16px -16px;
+            padding: 16px;
+            background: var(--input-background);  /* 改为浅灰�����背景 */
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 12px 12px 0 0;
+        }
+
+        /* 修改 Offer 评分区域样式 */
+        .offer-scores {
+            background: transparent;  /* 移除背景色 */
+            padding: 12px 0;  /* 调整内边距 */
+        }
+
+        /* 修改滑块容器样式 */
+        .range-slider {
+            background: var(--input-background);  /* 改为浅灰色背景 */
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* 修改标题和副标题的间距 */
+        .offers-header {
+            margin-bottom: 16px;  /* 减小底部间距 */
+        }
+
+        .offers-title {
+            margin-bottom: 0;  /* 移除底部间距 */
+        }
+
+        .section-title {
+            margin-bottom: 8px;  /* 减小标题底部间距 */
+        }
+
+        .section-subtitle {
+            margin: 0 0 16px 0;  /* 减小���标题底部间距 */
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 调整 offers-list 的上边距 */
+        #offers-list {
+            margin-top: 0;  /* 移除顶部边距 */
+            gap: 16px;  /* 保持卡片之间的间距 */
+        }
+
+        /* 修改计算按钮样式 */
+        .calculate-btn {
+            width: 100%;
+            margin-top: 16px;  /* 减小与 offer 卡片的距离 */
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 12px;
+            background: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+        }
+
+        /* 修改评估结果区域样式 */
+        #result {
+            margin-top: 24px;  /* 减小顶部间距 */
+            background-color: var(--input-background);  /* 与权重设置模块背景色一致 */
+            border-radius: 16px;
+            padding: clamp(15px, 2vw, 24px);
+        }
+
+        #scores-summary {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 20px;
+        }
+
+        .data-table-wrapper {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            margin-top: 20px;
+        }
+
+        /* 移除不需要的样式 */
+        .intro-card,
+        .intro-title,
+        .intro-content {
+            display: none;
+        }
+
+        /* 确保副标题样式统一 */
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 8px 0 24px 0;
+            padding-left: 0;
+            line-height: 1.6;
+        }
+
+        /* 添加新的标题和作者样式 */
+        .header {
+            text-align: center;
+            margin-bottom: clamp(40px, 5vw, 60px);
+        }
+
+        h1 {
+            font-size: clamp(32px, 4vw, 48px);
+            margin-bottom: 16px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(20px, 2.5vw, 28px);  /* 增大副标题字体 */
+            margin-bottom: 16px;
+        }
+
+        .author {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 移除原有的 footer 样式 */
+        .footer {
+            display: none;
+        }
+
+        /* 添加雷达图相关样式 */
+        .chart-wrapper {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 20px;
+            height: 400px;  /* 设置固定高度 */
+        }
+
+        /* 调整表格与雷达图的间距 */
+        .data-table-wrapper {
+            margin-top: 0;
+        }
+
+        /* 添加副标题样式 */
+        .header {
+            text-align: center;
+            margin-bottom: clamp(40px, 5vw, 60px);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin: 12px 0;  /* 调整与标题和作者信息的间距 */
+        }
+
+        .author {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        /* 修改标题相关样式 */
+        .header {
+            text-align: center;
+            margin-bottom: clamp(40px, 5vw, 60px);
+        }
+
+        h1 {
+            font-size: clamp(32px, 4vw, 48px);
+            margin-bottom: 16px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(20px, 2.5vw, 28px);
+            margin-bottom: 24px;  /* 增加与分割线的间距 */
+        }
+
+        /* 移除分割线相关样式 */
+        .divider {
+            display: none;
+        }
+
+        .author {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 添加高亮样式 */
+        .author {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .author .highlight {
+            color: var(--primary-color);  /* 使用主题蓝色 */
+            font-weight: 500;  /* 稍微加粗 */
+        }
+
+        /* 修改副标题样式 */
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(20px, 2.5vw, 28px);
+            margin-bottom: 24px;
+        }
+
+        /* 在暗黑模式下修改副标题颜色 */
+        [data-theme="dark"] .subtitle {
+            color: #7ed957;  /* 设置为指定的绿色 */
+        }
+
+        /* 添加暗黑模式下滑块的样式 */
+        [data-theme="dark"] .range-slider input[type="range"]::-webkit-slider-thumb {
+            background: #fa50b9;
+        }
+
+        [data-theme="dark"] .range-slider input[type="range"]::-moz-range-thumb {
+            background: #fa50b9;
+        }
+
+        [data-theme="dark"] .range-slider input[type="range"]::-webkit-slider-thumb:hover {
+            background: #fa50b9;
+        }
+
+        /* 在暗黑模式下修改按钮颜色 */
+        [data-theme="dark"] .add-weight-btn,
+        [data-theme="dark"] .calculate-btn {
+            background-color: #fa50b9;
+        }
+
+        [data-theme="dark"] .add-weight-btn:hover,
+        [data-theme="dark"] .calculate-btn:hover {
+            background-color: #fa50b9;
+            opacity: 0.9;
+        }
+
+        /* 修改按钮阴影颜色 */
+        [data-theme="dark"] .add-weight-btn,
+        [data-theme="dark"] .calculate-btn {
+            box-shadow: 0 2px 8px rgba(250, 80, 185, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Offer 对比工具</h1>
+            <div class="subtitle">量化选择，用数据帮你锁定最优 offer！</div>
+            <div class="author">Created by <span class="highlight">斜杠土木 er</span></div>
+        </div>
+        
+        <div class="main-container">
+            <!-- 左侧栏：权重设 -->
+            <div class="sidebar">
+                <div class="weight-form">
+                    <h2 class="section-title">🎯 工具介绍</h2>
+                    <p class="section-subtitle">本工具旨在帮助求职者在面对多个 Offer 时，通过量化评估的方式做出更理性的选择。</p>
+                    
+                    <h2 class="section-title">⚖️ 权重设置</h2>
+                    <p class="section-subtitle">请设置各评估因素的权重，总和需为100</p>
+                    
+                    <!-- 权重设置卡片 -->
+                    <div class="weight-card">
+                        <div id="weight-list">
+                            <div class="weight-item" id="weight-salary">
+                                <label>薪资待遇权重</label>
+                                <input type="number" id="salary-weight" min="0" max="100" value="25">
+                                <button class="delete-weight-btn" onclick="deleteWeight('salary')">×</button>
+                            </div>
+                            <div class="weight-item" id="weight-career">
+                                <label>职业发展权重</label>
+                                <input type="number" id="career-weight" min="0" max="100" value="20">
+                                <button class="delete-weight-btn" onclick="deleteWeight('career')">×</button>
+                            </div>
+                            <div class="weight-item" id="weight-content">
+                                <label>工作内容权重</label>
+                                <input type="number" id="content-weight" min="0" max="100" value="15">
+                                <button class="delete-weight-btn" onclick="deleteWeight('content')">×</button>
+                            </div>
+                            <div class="weight-item" id="weight-environment">
+                                <label>公司环境权重</label>
+                                <input type="number" id="environment-weight" min="0" max="100" value="10">
+                                <button class="delete-weight-btn" onclick="deleteWeight('environment')">×</button>
+                            </div>
+                            <div class="weight-item" id="weight-location">
+                                <label>工作地点权重</label>
+                                <input type="number" id="location-weight" min="0" max="100" value="10">
+                                <button class="delete-weight-btn" onclick="deleteWeight('location')">×</button>
+                            </div>
+                            <div class="weight-item" id="weight-worktime">
+                                <label>工作时间权重</label>
+                                <input type="number" id="worktime-weight" min="0" max="100" value="10">
+                                <button class="delete-weight-btn" onclick="deleteWeight('worktime')">×</button>
+                            </div>
+                            <div class="weight-item" id="weight-team">
+                                <label>团队氛围权重</label>
+                                <input type="number" id="team-weight" min="0" max="100" value="10">
+                                <button class="delete-weight-btn" onclick="deleteWeight('team')">×</button>
+                            </div>
+                        </div>
+                        <div class="weight-card-footer">
+                            <button class="add-weight-btn" onclick="addNewWeight()">添加新权重</button>
+                            <div class="total-weight">
+                                当前权重总和：<span id="weight-sum">100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 将说明模块移到这里 -->
+                    <div class="instruction-card">
+                        <h3 class="instruction-title">📝 使用说明</h3>
+                        <ul class="instruction-list">
+                            <li>权重代表各评估因素的重要程度</li>
+                            <li>所有权重之和必须等于100</li>
+                            <li>可以添加或删除评估因素</li>
+                            <li>修改权重后需要重新设置评分</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：Offer 评分区域 -->
+            <div class="main-content">
+                <div class="offers-container">
+                    <div class="offers-header">
+                        <div class="offers-title">
+                            <h2 class="section-title">🎯 Offer 评分</h2>
+                            <p class="section-subtitle">拖动滑块为每个维度打分（1-10分）</p>
+                        </div>
+                    </div>
+                    <div id="offers-list">
+                        <!-- Offer 表单会动态插入到这里 -->
+                        <!-- 添加按钮作为一个卡片放在这里 -->
+                        <div class="add-offer-container" onclick="addNewOffer()">
+                            <button class="add-offer-btn">添加新的 Offer</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="calculateScore()">开始对比</button>
+                <div id="result" style="display: none;">
+                    <h3 class="section-title">🏆 对比结果</h3>
+                    <div id="scores-summary"></div>
+                    <div id="table-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        let customFactors = [];
+        let offerCount = 0;
+        const MAX_OFFERS = 10;
+        const MIN_OFFERS = 1;
+
+        // 页面加载时初始化默认的 Offer
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查并应用保存的主题
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.querySelector('.theme-toggle i');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.className = 'fas fa-sun';
+            }
+
+            // 添加一个默认的 Offer
+            addNewOffer();
+            
+            // 设置权重输入监听器
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                if (input.id.includes('weight')) {
+                    input.addEventListener('input', updateWeightSum);
+                }
+            });
+        });
+
+        // 修改 addNewOffer 函数
+        function addNewOffer(offerName = null) {
+            if (offerCount >= MAX_OFFERS) {
+                alert('最多只能添加 ' + MAX_OFFERS + ' 个 Offer');
+                return;
+            }
+
+            offerCount++;
+            const offerId = 'offer-' + offerCount;
+            
+            const offerDiv = document.createElement('div');
+            offerDiv.className = 'offer-container';
+            offerDiv.id = offerId;
+            
+            // 获取所有权重项
+            const weightItems = document.querySelectorAll('.weight-item');
+            let rangeSliders = '';
+            
+            weightItems.forEach(item => {
+                const weightId = item.id;
+                const labelElement = item.querySelector('label');
+                let label = '';
+                
+                if (labelElement.querySelector('input')) {
+                    // 新添加的权重
+                    label = labelElement.querySelector('input').value || '未命名维度';
+                } else {
+                    // 默认权重
+                    label = labelElement.textContent.replace('权重', '').trim();
+                }
+                
+                rangeSliders += `
+                    <div class="range-slider">
+                        <label>${label}</label>
+                        <input type="range" id="${weightId}-${offerId}" min="1" max="10" value="7" step="1" 
+                               oninput="this.nextElementSibling.textContent = this.value">
+                        <span class="range-value">7</span>
+                    </div>
+                `;
+            });
+            
+            const offerContent = `
+                <div class="offer-name-container">
+                    <input type="text" class="offer-name-input" 
+                           value="${offerName || `Offer ${offerCount}`}" 
+                           placeholder="输入 Offer 名称">
+                    <button class="delete-offer-btn" onclick="deleteOffer('${offerId}')">×</button>
+                </div>
+                <div class="offer-scores">
+                    ${rangeSliders}
+                </div>
+            `;
+            
+            offerDiv.innerHTML = offerContent;
+            
+            // 将新的 Offer 添加到"添加新的 Offer"卡片之前
+            const addOfferCard = document.querySelector('.add-offer-container');
+            if (addOfferCard) {
+                addOfferCard.parentNode.insertBefore(offerDiv, addOfferCard);
+            } else {
+                document.getElementById('offers-list').appendChild(offerDiv);
+            }
+        }
+
+        // 修改 deleteOffer 函数
+        function deleteOffer(offerId) {
+            const currentOffers = document.querySelectorAll('.offer-container').length;
+            if (currentOffers <= MIN_OFFERS) {
+                alert('至少需要保留 1 个 Offer');
+                return;
+            }
+            
+            document.getElementById(offerId).remove();
+            offerCount = document.querySelectorAll('.offer-container').length;
+        }
+
+        function addCustomScoreToOffer(factorId, offerId) {
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'range-slider';
+            scoreDiv.id = `${factorId}-score-${offerId}-container`;
+            
+            const factorName = document.getElementById(`${factorId}-name`).value || '自定义维度';
+            scoreDiv.innerHTML = `
+                <label id="${factorId}-label-${offerId}">${factorName}</label>
+                <input type="range" min="1" max="10" value="5" step="1" id="${factorId}-score-${offerId}"
+                       oninput="this.nextElementSibling.textContent = this.value">
+                <span class="range-value">5</span>
+            `;
+            
+            document.getElementById(`custom-scores-${offerId}`).appendChild(scoreDiv);
+        }
+
+        function addCustomFactor() {
+            const factorId = 'custom-' + Date.now();
+            customFactors.push(factorId);
+            
+            // 添加权重输入
+            const weightDiv = document.createElement('div');
+            weightDiv.className = 'custom-factor-card';
+            weightDiv.innerHTML = `
+                <input type="text" placeholder="维度名称" id="${factorId}-name">
+                <input type="number" min="0" max="100" value="0" id="${factorId}-weight">
+                <span class="delete-factor" onclick="deleteCustomFactor('${factorId}')">删除</span>
+            `;
+            document.getElementById('custom-factors').appendChild(weightDiv);
+
+            // 为所有现有的 offer 添加该维度的评分
+            for (let i = 1; i <= offerCount; i++) {
+                addCustomScoreToOffer(factorId, 'offer-' + i);
+            }
+
+            // 添加名称变化监听
+            document.getElementById(`${factorId}-name`).addEventListener('input', function(e) {
+                for (let i = 1; i <= offerCount; i++) {
+                    const labelId = `${factorId}-label-offer-${i}`;
+                    if (document.getElementById(labelId)) {
+                        document.getElementById(labelId).textContent = e.target.value + '评分：';
+                    }
+                }
+            });
+
+            updateWeightSum();
+        }
+
+        // 修改 calculateScore 函数
+        function calculateScore() {
+            const totalWeight = updateWeightSum();
+            if (Math.abs(totalWeight - 100) > 0.01) {
+                alert('权重总和必须为100！当前总和为：' + totalWeight);
+                return;
+            }
+
+            // 定义颜色数组
+            const colors = [
+                'rgba(54, 162, 235, 1)',   // 蓝色
+                'rgba(255, 99, 132, 1)',   // 红色
+                'rgba(75, 192, 192, 1)',   // 绿色
+                'rgba(255, 206, 86, 1)',   // 黄色
+                'rgba(153, 102, 255, 1)'   // 紫色
+            ];
+
+            const scores = {};
+            const detailedScores = {};
+            const weights = [];
+            
+            // 获取所有权重项
+            document.querySelectorAll('#weight-list .weight-item').forEach(item => {
+                const weightInput = item.querySelector('input[type="number"]');
+                const weightId = item.id;
+                let label;
+                
+                const labelElement = item.querySelector('label');
+                if (labelElement.querySelector('input')) {
+                    label = labelElement.querySelector('input').value || '未命名维度';
+                } else {
+                    label = labelElement.textContent.replace('权重', '').trim();
+                }
+                
+                weights.push({
+                    id: weightId,
+                    label: label,
+                    weight: parseFloat(weightInput.value) / 100
+                });
+            });
+
+            // 计算每个 offer 的得分
+            document.querySelectorAll('.offer-container').forEach(offerContainer => {
+                const offerId = offerContainer.id;
+                const offerName = offerContainer.querySelector('.offer-name-input').value || `Offer ${offerId.split('-')[1]}`;
+                let offerScore = 0;
+                detailedScores[offerName] = {};
+
+                weights.forEach(({ id, label, weight }) => {
+                    const rangeInput = offerContainer.querySelector(`#${id}-${offerId}`);
+                    if (rangeInput) {
+                        const score = parseFloat(rangeInput.value);
+                        const weightedScore = score * weight;
+                        offerScore += weightedScore;
+                        detailedScores[offerName][label] = {
+                            score: score,
+                            weight: weight,
+                            weightedScore: weightedScore
+                        };
+                    }
+                });
+
+                scores[offerName] = offerScore;
+            });
+
+            // 显示结果
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+
+            // 更新文字总结
+            const summaryDiv = document.getElementById('scores-summary');
+            let summaryHTML = '<div style="margin-bottom: 20px;">';
+            Object.entries(scores).forEach(([name, score]) => {
+                summaryHTML += `<p><strong>${name}</strong> 总得分：${score.toFixed(2)}</p>`;
+            });
+
+            const highestScore = Math.max(...Object.values(scores));
+            const bestOffers = Object.keys(scores).filter(name => 
+                Math.abs(scores[name] - highestScore) < 0.01
+            );
+
+            summaryHTML += '<p style="margin-top: 15px;"><strong>建议：</strong>';
+            if (bestOffers.length === 1) {
+                summaryHTML += `${bestOffers[0]} 更适合您`;
+            } else {
+                summaryHTML += `${bestOffers.join('、')} 旗鼓相当，建议进一步考虑其他因素`;
+            }
+            summaryHTML += '</p>';
+            
+            summaryHTML += `
+                <p style="margin-top: 20px; color: var(--text-secondary); font-size: 13px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    注：本工具计算结果仅供参考，不构成任何建议。请结合个人实际情况做出决定。
+                </p>
+            </div>`;
+            
+            summaryDiv.innerHTML = summaryHTML;
+
+            // 生成详细数据表格
+            const tableContainer = document.getElementById('table-container');
+            let tableHTML = `
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>评估维度</th>
+                                ${Object.keys(detailedScores).map((name, index) => `
+                                    <th class="${bestOffers.includes(name) ? 'best-offer-column' : ''}" 
+                                        style="background-color: ${colors[index % colors.length].replace('1)', '0.1)')}">
+                                        ${name}
+                                    </th>
+                                `).join('')}
+                                <th>权重</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            weights.forEach(({ label, weight }) => {
+                tableHTML += `
+                    <tr>
+                        <td>${label}</td>
+                        ${Object.keys(detailedScores).map((offerName, index) => `
+                            <td class="${bestOffers.includes(offerName) ? 'best-offer-column' : ''}" 
+                                style="background-color: ${colors[index % colors.length].replace('1)', '0.05)')}">
+                                ${detailedScores[offerName][label].score.toFixed(1)}
+                            </td>
+                        `).join('')}
+                        <td>${(weight * 100).toFixed(0)}%</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    <tr class="total-row">
+                        <td><strong>总分</strong></td>
+                        ${Object.keys(scores).map((offerName, index) => `
+                            <td class="${bestOffers.includes(offerName) ? 'best-offer-column' : ''}"
+                                style="background-color: ${colors[index % colors.length].replace('1)', '0.2)')}">
+                                <strong>${scores[offerName].toFixed(2)}</strong>
+                            </td>
+                        `).join('')}
+                        <td><strong>100%</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
+                </div>
+            `;
+
+            tableContainer.innerHTML = tableHTML;
+
+            // 添加雷达图
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-wrapper';
+            chartContainer.innerHTML = '<canvas id="radarChart"></canvas>';
+            tableContainer.insertBefore(chartContainer, tableContainer.firstChild);
+
+            // 准备雷达图数据
+            const labels = weights.map(w => w.label);
+            const datasets = Object.keys(detailedScores).map((offerName, index) => {
+                return {
+                    label: offerName,
+                    data: weights.map(w => detailedScores[offerName][w.label].score),
+                    backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
+                    borderColor: colors[index % colors.length],
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[index % colors.length],
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: colors[index % colors.length],
+                    pointRadius: 4
+                };
+            });
+
+            // 创建雷达图
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            min: 0,
+                            ticks: {
+                                display: false,
+                                stepSize: 2
+                            },
+                            grid: {
+                                color: 'var(--border-color)',
+                                drawTicks: false
+                            },
+                            angleLines: {
+                                color: 'var(--border-color)'
+                            },
+                            pointLabels: {
+                                color: 'var(--text-primary)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Offer 评分对比',
+                            padding: 20,
+                            color: 'var(--text-primary)',
+                            font: {
+                                size: 16,
+                                weight: '600'
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                color: 'var(--text-primary)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function deleteCustomFactor(factorId) {
+            // 数组中移除
+            customFactors = customFactors.filter(id => id !== factorId);
+            
+            // 移除权重输入组
+            document.getElementById(`${factorId}-weight`).parentElement.remove();
+            
+            // 从所有 offer 中移除该维度评分
+            for (let i = 1; i <= offerCount; i++) {
+                const scoreContainer = document.getElementById(`${factorId}-score-offer-${i}-container`);
+                if (scoreContainer) {
+                    scoreContainer.remove();
+                }
+            }
+            
+            updateWeightSum();
+        }
+
+        function updateWeightSum() {
+            let sum = 0;
+            // 计算默认权重
+            document.querySelectorAll('.weight-item input[type="number"]').forEach(input => {
+                sum += parseFloat(input.value || 0);
+            });
+            
+            // 计算自定义权重
+            document.querySelectorAll('.custom-factor-card input[type="number"]').forEach(input => {
+                sum += parseFloat(input.value || 0);
+            });
+            
+            const weightSumElement = document.getElementById('weight-sum');
+            weightSumElement.textContent = sum;
+            
+            if (sum > 100) {
+                weightSumElement.style.color = 'var(--danger-color)';
+                weightSumElement.innerHTML = `${sum} <span style="font-size: 12px;">(超出100，请调整)</span>`;
+            } else if (sum < 100) {
+                weightSumElement.style.color = 'var(--danger-color)';
+                weightSumElement.innerHTML = `${sum} <span style="font-size: 12px;">(未达到100，请调整)</span>`;
+            } else {
+                weightSumElement.style.color = 'var(--text-secondary)';
+            }
+            
+            return sum;
+        }
+
+        const defaultWeights = [
+            { id: 'salary', name: '薪资待遇', value: 25 },
+            { id: 'career', name: '职业发展', value: 20 },
+            { id: 'content', name: '工作内容', value: 15 },
+            { id: 'environment', name: '公司环境', value: 10 },
+            { id: 'location', name: '工作地点', value: 10 },
+            { id: 'worktime', name: '工作时间', value: 10 },
+            { id: 'team', name: '团队氛围', value: 10 }
+        ];
+
+        function deleteWeight(weightId) {
+            if (confirm('确定要删除这个权重吗？删除后需要重新设置所有 Offer 的评分。')) {
+                const weightElement = document.getElementById(`weight-${weightId}`);
+                if (weightElement) {
+                    weightElement.remove();
+                    updateWeightSum();
+                    // 重新初始化所有 Offer 的评分项
+                    refreshAllOffers();
+                }
+            }
+        }
+
+        // 修改 addNewWeight 函数
+        function addNewWeight() {
+            if (confirm('���加新权重后���要重新设置所有 Offer 的评分，是否继续？')) {
+                const weightId = Date.now().toString(); // 生成唯一ID
+                const weightItem = document.createElement('div');
+                weightItem.className = 'weight-item';
+                weightItem.id = `weight-${weightId}`; // 确保ID格式一致
+                
+                weightItem.innerHTML = `
+                    <label>
+                        <input type="text" placeholder="权重名称" 
+                               onchange="updateWeightLabel(this.value, 'weight-${weightId}')"
+                               style="width: 100%; margin-bottom: 4px;">
+                    </label>
+                    <input type="number" min="0" max="100" value="0" 
+                           oninput="this.value = Math.min(Math.max(this.value, 0), 100)">
+                    <button class="delete-weight-btn" onclick="deleteWeight('${weightId}')">×</button>
+                `;
+                
+                document.getElementById('weight-list').appendChild(weightItem);
+                setupWeightInputListeners();
+                updateWeightSum();
+                refreshAllOffers();
+            }
+        }
+
+        function updateWeightLabel(name, weightId) {
+            // 更新所有 Offer 中对应的评分项标签
+            document.querySelectorAll('.offer-container').forEach(offer => {
+                const offerId = offer.id;
+                const scoreElement = document.querySelector(`#${weightId}-${offerId}`);
+                if (scoreElement) {
+                    scoreElement.closest('.range-slider').querySelector('label').textContent = name;
+                }
+            });
+        }
+
+        // 修改 setupWeightInputListeners 函数
+        function setupWeightInputListeners() {
+            document.querySelectorAll('.weight-item input[type="number"]').forEach(input => {
+                input.addEventListener('input', function(e) {
+                    // 限制输入值在0-100之间
+                    const value = parseFloat(e.target.value) || 0;
+                    if (value < 0) e.target.value = 0;
+                    if (value > 100) e.target.value = 100;
+
+                    updateWeightSum();
+                });
+            });
+        }
+
+        // 在页面加载和添加新权重时调用
+        document.addEventListener('DOMContentLoaded', function() {
+            setupWeightInputListeners();
+            addNewOffer();
+            updateWeightSum();
+        });
+
+        // 修改 refreshAllOffers 函数
+        function refreshAllOffers() {
+            // 保存现有的 Offer 名称和评分
+            const existingOffers = Array.from(document.querySelectorAll('.offer-container')).map(offer => {
+                const scores = {};
+                offer.querySelectorAll('.range-slider input[type="range"]').forEach(input => {
+                    scores[input.id] = input.value;
+                });
+                return {
+                    id: offer.id,
+                    name: offer.querySelector('.offer-name-input').value,
+                    scores: scores
+                };
+            });
+            
+            // 清空 offers-list
+            const offersList = document.getElementById('offers-list');
+            offersList.innerHTML = '';
+            
+            // 重新创建所有 Offer
+            existingOffers.forEach(offer => {
+                addNewOffer(offer.name);
+            });
+
+            // 添加"添加新的 Offer"卡片
+            const addOfferContainer = document.createElement('div');
+            addOfferContainer.className = 'add-offer-container';
+            addOfferContainer.onclick = addNewOffer;
+            addOfferContainer.innerHTML = `
+                <button class="add-offer-btn">添加新的 Offer</button>
+            `;
+            offersList.appendChild(addOfferContainer);
+        }
+
+        // 在 script 标签中添加主题切换相关函数
+        function toggleTheme() {
+            const body = document.documentElement;
+            const themeToggle = document.querySelector('.theme-toggle i');
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                themeToggle.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // 页面加载时检查并应用保存的主题
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.querySelector('.theme-toggle i');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.className = 'fas fa-sun';
+            }
+        });
+    </script>
+</body>
+</html> 
